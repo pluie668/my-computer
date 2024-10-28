@@ -1,120 +1,90 @@
 ﻿using System;
-using Hardware.Info;
-using System.Net.NetworkInformation;
+using System.Diagnostics;
 
 class Program
- {
-     static IHardwareInfo hardwareInfo;
+{
+    static void Main()
+    {
+        // 获取 CPU 信息
+        Console.WriteLine("CPU 信息：");
+        ExecuteCommand("wmic cpu get name");
 
-     static void Main(string[] _)
-     {
-         try
-         {
-             hardwareInfo = new HardwareInfo();
+        // 获取内存信息
+        Console.WriteLine("\n内存信息：");
+        ExecuteCommand("wmic MemoryChip get Capacity");
 
-             //hardwareInfo.RefreshOperatingSystem();
-             //hardwareInfo.RefreshMemoryStatus();
-             //hardwareInfo.RefreshBatteryList();
-             //hardwareInfo.RefreshBIOSList();
-             //hardwareInfo.RefreshComputerSystemList();
-             //hardwareInfo.RefreshCPUList();
-             //hardwareInfo.RefreshDriveList();
-             //hardwareInfo.RefreshKeyboardList();
-             //hardwareInfo.RefreshMemoryList();
-             //hardwareInfo.RefreshMonitorList();
-             //hardwareInfo.RefreshMotherboardList();
-             //hardwareInfo.RefreshMouseList();
-             //hardwareInfo.RefreshNetworkAdapterList();
-             //hardwareInfo.RefreshPrinterList();
-             //hardwareInfo.RefreshSoundDeviceList();
-             //hardwareInfo.RefreshVideoControllerList();
+        // 获取磁盘信息
+        Console.WriteLine("\n磁盘信息：");
+        ExecuteCommand("wmic diskdrive get caption, size, mediaType");
+    }
 
-             hardwareInfo.RefreshAll();
-         }
-         catch (Exception ex)
-         {
-             Console.WriteLine(ex);
-         }
+    static void ExecuteCommand(string command)
+    {
+        var processInfo = new ProcessStartInfo("cmd.exe", "/c " + command)
+        {
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
 
-         Console.WriteLine(hardwareInfo.OperatingSystem);
+        using (var process = Process.Start(processInfo))
+        {
+            using (var reader = process.StandardOutput)
+            {
+                string result = reader.ReadToEnd();
+                Console.WriteLine(result);
+                ConvertAndDisplayInfo(result, command);
+            }
+        }
+    }
 
-         Console.WriteLine(hardwareInfo.MemoryStatus);
+    static void ConvertAndDisplayInfo(string rawData, string command)
+    {
+        var lines = rawData.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-         foreach (var hardware in hardwareInfo.BatteryList)
-             Console.WriteLine(hardware);
+        if (command.Contains("cpu"))
+        {
+            // 处理 CPU 信息
+            for (int i = 1; i < lines.Length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(lines[i]))
+                {
+                    Console.WriteLine($"CPU 型号: {lines[i].Trim()}");
+                }
+            }
+        }
+        else if (command.Contains("MemoryChip"))
+        {
+            // 处理内存信息
+            long totalMemory = 0;
+            for (int i = 1; i < lines.Length; i++)
+            {
+                if (long.TryParse(lines[i].Trim(), out long capacity))
+                {
+                    totalMemory += capacity; // 累加内存容量
+                }
+            }
+            // 转换为 GB
+            double totalMemoryGB = totalMemory / (1024.0 * 1024 * 1024);
+            Console.WriteLine($"总内存: {totalMemoryGB:F2} GB");
+        }
+        else if (command.Contains("diskdrive"))
+        {
+            // 处理磁盘信息
+            for (int i = 1; i < lines.Length; i++)
+            {
+                var columns = lines[i].Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (columns.Length >= 3)
+                {
+                    string drive = columns[0]; // 驱动器描述
+                    long size = Convert.ToInt64(columns[1]); // 总容量（字节）
+                    string mediaType = columns[2]; // 媒体类型
 
-         foreach (var hardware in hardwareInfo.BiosList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.ComputerSystemList)
-             Console.WriteLine(hardware);
-
-         foreach (var cpu in hardwareInfo.CpuList)
-         {
-             Console.WriteLine(cpu);
-
-             foreach (var cpuCore in cpu.CpuCoreList)
-                 Console.WriteLine(cpuCore);
-         }
-
-         foreach (var drive in hardwareInfo.DriveList)
-         {
-             Console.WriteLine(drive);
-
-             foreach (var partition in drive.PartitionList)
-             {
-                 Console.WriteLine(partition);
-
-                 foreach (var volume in partition.VolumeList)
-                     Console.WriteLine(volume);
-             }
-         }
-
-         foreach (var hardware in hardwareInfo.KeyboardList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.MemoryList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.MonitorList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.MotherboardList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.MouseList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.NetworkAdapterList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.PrinterList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.SoundDeviceList)
-             Console.WriteLine(hardware);
-
-         foreach (var hardware in hardwareInfo.VideoControllerList)
-             Console.WriteLine(hardware);
-
-         foreach (var address in HardwareInfo.GetLocalIPv4Addresses(NetworkInterfaceType.Ethernet, OperationalStatus.Up))
-             Console.WriteLine(address);
-
-         Console.WriteLine();
-
-         foreach (var address in HardwareInfo.GetLocalIPv4Addresses(NetworkInterfaceType.Wireless80211))
-             Console.WriteLine(address);
-
-         Console.WriteLine();
-
-         foreach (var address in HardwareInfo.GetLocalIPv4Addresses(OperationalStatus.Up))
-             Console.WriteLine(address);
-
-         Console.WriteLine();
-
-         foreach (var address in HardwareInfo.GetLocalIPv4Addresses())
-             Console.WriteLine(address);
-
-         Console.ReadLine();
-     }
- }
+                    // 转换为 GB
+                    double sizeGB = size / (1024.0 * 1024 * 1024);
+                    Console.WriteLine($"驱动器 {drive}: 总容量: {sizeGB:F2} GB, 媒体类型: {mediaType}");
+                }
+            }
+        }
+    }
+}

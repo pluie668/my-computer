@@ -10,8 +10,5 @@
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Hardware.Info" Version="101.0.0" />
-  </ItemGroup>
 
 </Project>
