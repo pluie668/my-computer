@@ -39,14 +39,14 @@ namespace SystemInfo
         static long GetMemorySize()
         {
             long totalMemory = 0;
-            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select TotalVisibleMemorySize from Win32_OperatingSystem"))
+            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select Capacity from Win32_PhysicalMemory"))
             {
                 foreach (ManagementObject obj in searcher.Get())
                 {
-                    totalMemory = Convert.ToInt64(obj["TotalVisibleMemorySize"]);
+                    totalMemory += Convert.ToInt64(obj["Capacity"]); // 累加每个内存条的容量
                 }
             }
-            return totalMemory;
+            return totalMemory / (1024 * 1024); // 转换为 MB
         }
 
         static void GetDiskInfo()
