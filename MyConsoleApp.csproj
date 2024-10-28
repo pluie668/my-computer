@@ -5,8 +5,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier> <!-- 根据需要选择合适的运行时标识符 -->
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
