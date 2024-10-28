@@ -16,6 +16,9 @@ class Program
         // 获取磁盘信息
         Console.WriteLine("\n磁盘信息：");
         ExecuteCommand("wmic diskdrive get caption, mediaType, size");
+
+        Console.WriteLine("按任意键退出...");
+        Console.ReadKey();
     }
 
     static void ExecuteCommand(string command)
