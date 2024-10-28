@@ -1,5 +1,7 @@
 ﻿using System;
 using Hardware.Info;
+using System.Net.NetworkInformation;
+
 class Program
  {
      static IHardwareInfo hardwareInfo;
