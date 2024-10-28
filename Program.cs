@@ -15,7 +15,7 @@ class Program
 
         // 获取磁盘信息
         Console.WriteLine("\n磁盘信息：");
-        ExecuteCommand("wmic diskdrive get caption, size, mediaType");
+        ExecuteCommand("wmic diskdrive get caption, mediaType, size");
     }
 
     static void ExecuteCommand(string command)
@@ -76,13 +76,12 @@ class Program
                 var columns = lines[i].Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (columns.Length >= 3)
                 {
-                    string drive = columns[0]; // 驱动器描述
-                    long size = Convert.ToInt64(columns[1]); // 总容量（字节）
-                    string mediaType = columns[2]; // 媒体类型
+                    string drive = string.Join(" ", columns, 0, columns.Length - 2); // 驱动器描述
+                    long size = Convert.ToInt64(columns[columns.Length - 1]); // 总容量（字节）
 
                     // 转换为 GB
                     double sizeGB = size / (1024.0 * 1024 * 1024);
-                    Console.WriteLine($"驱动器 {drive}: 总容量: {sizeGB:F2} GB, 媒体类型: {mediaType}");
+                    Console.WriteLine($"驱动器 {drive}: 总容量: {sizeGB:F2} GB");
                 }
             }
         }
