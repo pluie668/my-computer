@@ -1,0 +1,30 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Oo]bj/
+[Bb]in/
+publish/
+bin/
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# Other files
+*.ncb
+*.sdf
+*.opensdf
+*.cache
+*.log
+*.tmp
+*.bak
+
+# macOS files
+.DS_Store
