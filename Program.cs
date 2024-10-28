@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Management;
+using Microsoft.Management.Infrastructure;
 
 namespace SystemInfo
 {
@@ -26,11 +26,12 @@ namespace SystemInfo
         static string GetCpuInfo()
         {
             string cpuInfo = string.Empty;
-            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select Name from Win32_Processor"))
+            using (var cimSession = CimSession.Create("localhost"))
             {
-                foreach (ManagementObject obj in searcher.Get())
+                var instances = cimSession.QueryInstances(@"root\cimv2", "WQL", "SELECT Name FROM Win32_Processor");
+                foreach (var instance in instances)
                 {
-                    cpuInfo = obj["Name"].ToString();
+                    cpuInfo = instance.CimInstanceProperties["Name"].Value.ToString();
                 }
             }
             return cpuInfo;
@@ -39,11 +40,12 @@ namespace SystemInfo
         static long GetTotalPhysicalMemory()
         {
             long totalMemory = 0;
-            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select Capacity from Win32_PhysicalMemory"))
+            using (var cimSession = CimSession.Create("localhost"))
             {
-                foreach (ManagementObject obj in searcher.Get())
+                var instances = cimSession.QueryInstances(@"root\cimv2", "WQL", "SELECT Capacity FROM Win32_PhysicalMemory");
+                foreach (var instance in instances)
                 {
-                    totalMemory += Convert.ToInt64(obj["Capacity"]);
+                    totalMemory += Convert.ToInt64(instance.CimInstanceProperties["Capacity"].Value);
                 }
             }
             return totalMemory / (1024 * 1024); // 转换为 MB
@@ -51,13 +53,14 @@ namespace SystemInfo
 
         static void GetDiskInfo()
         {
-            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select DeviceID, Size, FreeSpace from Win32_LogicalDisk"))
+            using (var cimSession = CimSession.Create("localhost"))
             {
-                foreach (ManagementObject obj in searcher.Get())
+                var instances = cimSession.QueryInstances(@"root\cimv2", "WQL", "SELECT DeviceID, Size, FreeSpace FROM Win32_LogicalDisk");
+                foreach (var instance in instances)
                 {
-                    string deviceId = obj["DeviceID"].ToString();
-                    long size = Convert.ToInt64(obj["Size"]);
-                    long freeSpace = Convert.ToInt64(obj["FreeSpace"]);
+                    string deviceId = instance.CimInstanceProperties["DeviceID"].Value.ToString();
+                    long size = Convert.ToInt64(instance.CimInstanceProperties["Size"].Value);
+                    long freeSpace = Convert.ToInt64(instance.CimInstanceProperties["FreeSpace"].Value);
                     long usedSpace = size - freeSpace;
 
                     Console.WriteLine($"磁盘 {deviceId} - 总容量: {size / (1024 * 1024)} MB, 可用空间: {freeSpace / (1024 * 1024)} MB, 已用空间: {usedSpace / (1024 * 1024)} MB");
