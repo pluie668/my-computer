@@ -21,6 +21,7 @@ namespace SystemInfo
             GetDiskInfo();
 
             Console.ReadLine();
+            Console.ReadKey();
         }
 
         static string GetCpuInfo()
